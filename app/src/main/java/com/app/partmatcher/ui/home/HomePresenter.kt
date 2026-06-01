@@ -24,10 +24,12 @@ class HomePresenter(
 
     private fun checkSupportRoleAndLoadInfo() {
         val roles = tokenManager.getRoles()
-        if (roles.contains("SUPPORT") || roles.contains("ROLE_SUPPORT")) {
+        android.util.Log.d("HomePresenter", "Checking roles for dashboard: $roles")
+        
+        val isSupport = roles.any { it.contains("SUPPORT", ignoreCase = true) }
+        
+        if (isSupport) {
             val name = tokenManager.getUserName() ?: "Сотрудник"
-            
-            // Show greeting immediately with 0/loading state
             viewState.showSupportGreeting(name, 0)
             
             apiService.getChatContacts().enqueue(object : Callback<List<UserDto>> {
@@ -35,15 +37,10 @@ class HomePresenter(
                     if (response.isSuccessful) {
                         val chatCount = response.body()?.size ?: 0
                         viewState.showSupportGreeting(name, chatCount)
-                    } else {
-                        // Keep the greeting but maybe log error
-                        android.util.Log.e("HomePresenter", "Failed to load chats: ${response.code()}")
                     }
                 }
 
-                override fun onFailure(call: Call<List<UserDto>>, t: Throwable) {
-                    android.util.Log.e("HomePresenter", "Chat contacts API error", t)
-                }
+                override fun onFailure(call: Call<List<UserDto>>, t: Throwable) {}
             })
         }
     }

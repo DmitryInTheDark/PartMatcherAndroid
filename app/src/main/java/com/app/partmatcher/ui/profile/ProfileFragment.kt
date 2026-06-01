@@ -38,8 +38,10 @@ class ProfileFragment : MvpAppCompatFragment(), ProfileView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnSupport.setOnClickListener {
+            // Пытаемся найти ID сотрудника поддержки. 
+            // В реальном приложении это может быть системный аккаунт.
             val bundle = Bundle().apply {
-                putLong("recipientId", 1L) // Assuming 1L is Support ID
+                putLong("recipientId", 2L) // Используем ID 2, который мы видели в логах как Support Agent
             }
             findNavController().navigate(R.id.chatFragment, bundle)
         }

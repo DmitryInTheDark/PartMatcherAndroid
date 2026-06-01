@@ -19,7 +19,8 @@ import ua.naiksoftware.stomp.dto.StompHeader
 class ChatPresenter(
     private val apiService: ApiService,
     private val token: String,
-    private val recipientId: Long
+    private val recipientId: Long,
+    private val currentUserId: Long
 ) : MvpPresenter<ChatView>() {
 
     private var stompClient: StompClient? = null
@@ -28,6 +29,7 @@ class ChatPresenter(
 
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
+        Log.d("ChatPresenter", "Attach: recipientId=$recipientId, userId=$currentUserId, tokenLen=${token.length}")
         loadHistory()
         connectWebSocket()
     }
@@ -81,8 +83,15 @@ class ChatPresenter(
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe({ stompMessage ->
                 val message = gson.fromJson(stompMessage.payload, ChatMessageDto::class.java)
-                Log.d("ChatPresenter", "Message received: ${message.content}")
-                viewState.onMessageReceived(message)
+                Log.d("ChatPresenter", "Message received: ${message.content} from ${message.senderId} to ${message.recipientId}")
+                
+                // Фильтруем сообщения: показываем только те, что относятся к текущему диалогу
+                val isFromMeToHim = message.senderId == currentUserId && message.recipientId == recipientId
+                val isFromHimToMe = message.senderId == recipientId && message.recipientId == currentUserId
+                
+                if (isFromMeToHim || isFromHimToMe) {
+                    viewState.onMessageReceived(message)
+                }
             }, { error ->
                 Log.e("ChatPresenter", "Topic subscription error", error)
             })
@@ -94,22 +103,39 @@ class ChatPresenter(
 
     fun sendMessage(content: String) {
         if (content.isBlank()) return
-        Log.d("ChatPresenter", "Sending message: $content to $recipientId")
         
-        val message = com.app.partmatcher.data.model.ChatMessageSendDto(
+        if (stompClient?.isConnected != true) {
+            Log.w("ChatPresenter", "Client not connected, trying to send message")
+            viewState.showError("Соединение устанавливается...")
+        }
+
+        Log.d("ChatPresenter", "Sending message: $content to $recipientId from $currentUserId")
+        
+        val messageSend = com.app.partmatcher.data.model.ChatMessageSendDto(
             recipientId = recipientId,
             content = content
         )
-        val jsonMessage = gson.toJson(message)
+        val jsonMessage = gson.toJson(messageSend)
         
-        val sendDisposable = stompClient?.send("/app/support/message", jsonMessage)
+        val stompMessage = ua.naiksoftware.stomp.dto.StompMessage(
+            ua.naiksoftware.stomp.dto.StompCommand.SEND,
+            listOf(
+                ua.naiksoftware.stomp.dto.StompHeader(ua.naiksoftware.stomp.dto.StompHeader.DESTINATION, "/app/support/message"),
+                ua.naiksoftware.stomp.dto.StompHeader(ua.naiksoftware.stomp.dto.StompHeader.CONTENT_TYPE, "application/json")
+            ),
+            jsonMessage
+        )
+        
+        val sendDisposable = stompClient?.send(stompMessage)
             ?.subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe({
                 Log.i("ChatPresenter", "Message sent successfully")
+                // Оптимистичное добавление сообщения в список (опционально)
+                // viewState.onMessageReceived(ChatMessageDto(senderId = currentUserId, recipientId = recipientId, content = content))
             }, { error ->
                 Log.e("ChatPresenter", "Failed to send message", error)
-                viewState.showError("Failed to send message: ${error.message}")
+                viewState.showError("Ошибка отправки: ${error.message}")
             })
             
         sendDisposable?.let { compositeDisposable.add(it) }

@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             navGraph.setStartDestination(startDestId = R.id.loginFragment)
         } else {
             val roles = tokenManager.getRoles()
+            android.util.Log.d("MainActivity", "User roles from storage: $roles")
             val startDest = when {
                 roles.contains("ADMIN") || roles.contains("ROLE_ADMIN") -> R.id.adminStatsFragment
                 else -> R.id.homeFragment

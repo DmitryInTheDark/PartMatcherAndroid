@@ -24,7 +24,8 @@ class ChatFragment : MvpAppCompatFragment(), ChatView {
         ChatPresenter(
             NetworkModule.getApiService(requireContext()),
             tokenManager.getToken() ?: "",
-            recipientId
+            recipientId,
+            tokenManager.getUserId()
         )
     }
 

@@ -76,11 +76,11 @@ interface ApiService {
     @DELETE("/api/parts/{id}")
     fun deletePart(@Path("id") id: Long): Call<ApiResponseDto>
 
-    // SUPPORT
-    @GET("/api/support/chat/history")
+    // CHAT
+    @GET("/api/chat/history")
     fun getChatHistory(@Query("counterpartyId") counterpartyId: Long): Call<List<ChatMessageDto>>
 
-    @GET("/api/support/chat/contacts")
+    @GET("/api/chat/contacts")
     fun getChatContacts(): Call<List<UserDto>>
 
     // ADMIN
