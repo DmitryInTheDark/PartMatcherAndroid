@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.ArrayAdapter
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.navigation.fragment.findNavController
@@ -15,6 +16,7 @@ import com.app.partmatcher.data.model.PartDto
 import com.app.partmatcher.databinding.FragmentAdminPartListBinding
 import com.app.partmatcher.ui.vin_result.PartsAdapter
 import com.app.partmatcher.util.TokenManager
+import com.app.partmatcher.util.NoFilterAdapter
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
@@ -26,6 +28,8 @@ class AdminPartListFragment : MvpAppCompatFragment(), AdminPartListView {
     private val presenter by moxyPresenter {
         AdminPartListPresenter(NetworkModule.getApiService(requireContext()))
     }
+
+    private lateinit var suggestionsAdapter: NoFilterAdapter
 
     private val adapter = PartsAdapter { part ->
         findNavController().navigate(
@@ -46,6 +50,9 @@ class AdminPartListFragment : MvpAppCompatFragment(), AdminPartListView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        suggestionsAdapter = NoFilterAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, mutableListOf())
+        binding.searchEditText.setAdapter(suggestionsAdapter)
+
         binding.toolbar.setNavigationOnClickListener {
             findNavController().popBackStack()
         }
@@ -57,6 +64,22 @@ class AdminPartListFragment : MvpAppCompatFragment(), AdminPartListView {
             presenter.onSearchQueryChanged(text?.toString() ?: "")
         }
 
+        binding.searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                val text = binding.searchEditText.text.toString()
+                if (text.length >= 2) {
+                    presenter.onSearchQueryChanged(text)
+                }
+            }
+        }
+
+        binding.searchEditText.setOnItemClickListener { parent, _, position, _ ->
+            val selectedSuggestion = parent.getItemAtPosition(position) as String
+            val query = selectedSuggestion.substringBefore(" (")
+            binding.searchEditText.setText(query)
+            presenter.onSearchQueryChanged(query)
+        }
+
         binding.fabAddPart.setOnClickListener {
             Toast.makeText(context, "Add part clicked", Toast.LENGTH_SHORT).show()
             // Here you would navigate to AddPartFragment
@@ -65,6 +88,13 @@ class AdminPartListFragment : MvpAppCompatFragment(), AdminPartListView {
 
     override fun showParts(parts: List<PartDto>) {
         adapter.submitList(parts)
+    }
+
+    override fun showSearchSuggestions(suggestions: List<String>) {
+        suggestionsAdapter.updateItems(suggestions)
+        if (suggestions.isNotEmpty() && binding.searchEditText.isFocused) {
+            binding.searchEditText.showDropDown()
+        }
     }
 
     override fun showLoading() {

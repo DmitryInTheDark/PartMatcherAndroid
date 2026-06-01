@@ -37,6 +37,12 @@ class ProfileFragment : MvpAppCompatFragment(), ProfileView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.btnSupport.setOnClickListener {
+            val bundle = Bundle().apply {
+                putLong("recipientId", 1L) // Assuming 1L is Support ID
+            }
+            findNavController().navigate(R.id.chatFragment, bundle)
+        }
         binding.btnLogout.setOnClickListener {
             presenter.onLogoutClicked()
         }

@@ -60,7 +60,6 @@ class MainActivity : AppCompatActivity() {
             val roles = tokenManager.getRoles()
             val startDest = when {
                 roles.contains("ADMIN") || roles.contains("ROLE_ADMIN") -> R.id.adminStatsFragment
-                roles.contains("SUPPORT") || roles.contains("ROLE_SUPPORT") -> R.id.chatFragment
                 else -> R.id.homeFragment
             }
             navGraph.setStartDestination(startDestId = startDest)
@@ -95,6 +94,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupMenuForRole(roles: Set<String>) {
+        android.util.Log.d("MainActivity", "Setting up menu for roles: $roles")
         val menuRes = when {
             roles.contains("ADMIN") || roles.contains("ROLE_ADMIN") -> R.menu.bottom_nav_menu_admin
             roles.contains("SUPPORT") || roles.contains("ROLE_SUPPORT") -> R.menu.bottom_nav_menu_support
@@ -106,9 +106,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNav.menu.clear()
         binding.bottomNav.inflateMenu(menuRes)
+        
+        // Re-setup with NavController to ensure clicks work with the new menu
         binding.bottomNav.setupWithNavController(navController)
 
-        // If user is Admin, ensure they are not stuck on the User Home screen if they just logged in/started
+        // If user is Admin, ensure they are not stuck on the User Home screen
         if (roles.contains("ADMIN") || roles.contains("ROLE_ADMIN")) {
             if (navController.currentDestination?.id == R.id.homeFragment) {
                 navController.navigate(R.id.adminStatsFragment)

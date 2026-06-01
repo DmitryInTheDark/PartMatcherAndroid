@@ -14,6 +14,18 @@
         <action
             android:id="@+id/action_homeFragment_to_favoritesFragment"
             app:destination="@id/favoritesFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_searchResultsFragment"
+            app:destination="@id/searchResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchResultsFragment"
+        android:name="com.app.partmatcher.ui.search_results.SearchResultsFragment"
+        android:label="Search Results">
+        <argument
+            android:name="query"
+            app:argType="string" />
     </fragment>
 
     <fragment
@@ -71,7 +83,21 @@
     <fragment
         android:id="@+id/chatFragment"
         android:name="com.app.partmatcher.ui.chat.ChatFragment"
-        android:label="Support Chat" />
+        android:label="Support Chat">
+        <argument
+            android:name="recipientId"
+            android:defaultValue="0L"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/supportInboxFragment"
+        android:name="com.app.partmatcher.ui.chat.SupportInboxFragment"
+        android:label="Inbox">
+        <action
+            android:id="@+id/action_supportInboxFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/adminStatsFragment"

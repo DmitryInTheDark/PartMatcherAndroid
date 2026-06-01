@@ -19,12 +19,13 @@
             android:padding="24dp">
 
             <ImageView
+                android:id="@+id/ivLogo"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp"
-                android:src="@drawable/ic_launcher_foreground"
-                app:tint="#0F4C81" />
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@string/app_name" />
 
             <TextView
                 android:layout_width="wrap_content"

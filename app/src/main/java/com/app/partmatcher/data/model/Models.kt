@@ -115,6 +115,11 @@ data class ChatMessageDto(
     val read: Boolean = false
 )
 
+data class ChatMessageSendDto(
+    val recipientId: Long,
+    val content: String
+)
+
 data class AdminStatisticsDto(
     val totalUsers: Long,
     val totalVehicles: Long,

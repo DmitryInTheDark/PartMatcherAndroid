@@ -12,6 +12,8 @@ class AdminPartListPresenter(
     private val apiService: ApiService
 ) : MvpPresenter<AdminPartListView>() {
 
+    private var suggestionsCall: Call<List<PartDto>>? = null
+
     override fun onFirstViewAttach() {
         super.onFirstViewAttach()
         loadParts("")
@@ -19,6 +21,27 @@ class AdminPartListPresenter(
 
     fun onSearchQueryChanged(query: String) {
         loadParts(query)
+        fetchSuggestions(query)
+    }
+
+    private fun fetchSuggestions(query: String) {
+        if (query.length < 2) {
+            viewState.showSearchSuggestions(emptyList())
+            return
+        }
+
+        suggestionsCall?.cancel()
+        suggestionsCall = apiService.searchParts(query)
+        suggestionsCall?.enqueue(object : Callback<List<PartDto>> {
+            override fun onResponse(call: Call<List<PartDto>>, response: Response<List<PartDto>>) {
+                if (response.isSuccessful) {
+                    val suggestions = response.body()?.map { "${it.name} (${it.article})" } ?: emptyList()
+                    viewState.showSearchSuggestions(suggestions)
+                }
+            }
+
+            override fun onFailure(call: Call<List<PartDto>>, t: Throwable) {}
+        })
     }
 
     private fun loadParts(query: String) {

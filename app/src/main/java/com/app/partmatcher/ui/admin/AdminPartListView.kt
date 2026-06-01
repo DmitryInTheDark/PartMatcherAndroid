@@ -7,4 +7,7 @@ import moxy.viewstate.strategy.alias.AddToEndSingle
 interface AdminPartListView : BaseView {
     @AddToEndSingle
     fun showParts(parts: List<PartDto>)
+
+    @AddToEndSingle
+    fun showSearchSuggestions(suggestions: List<String>)
 }

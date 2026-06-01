@@ -80,6 +80,9 @@ interface ApiService {
     @GET("/api/support/chat/history")
     fun getChatHistory(@Query("counterpartyId") counterpartyId: Long): Call<List<ChatMessageDto>>
 
+    @GET("/api/support/chat/contacts")
+    fun getChatContacts(): Call<List<UserDto>>
+
     // ADMIN
     @GET("/api/admin/statistics")
     fun getStatistics(): Call<AdminStatisticsDto>

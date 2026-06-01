@@ -16,4 +16,10 @@ interface HomeView : BaseView {
 
     @OneExecution
     fun navigateToFavorites()
+
+    @AddToEndSingle
+    fun showSearchSuggestions(suggestions: List<String>)
+
+    @AddToEndSingle
+    fun showSupportGreeting(name: String, chatCount: Int)
 }
