@@ -96,7 +96,7 @@ class FavoritesFragment : MvpAppCompatFragment(), FavoritesView {
 
     override fun onUnauthorized() {
         TokenManager(requireContext()).clearToken()
-        findNavController().navigate(R.id.loginFragment)
+        findNavController().navigate(resId = R.id.loginFragment)
     }
 
     override fun onDestroyView() {

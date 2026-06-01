@@ -42,8 +42,8 @@ class ChatFragment : MvpAppCompatFragment(), ChatView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // In a real app, currentUserId would come from a user session
-        adapter = ChatAdapter(currentUserId = 3L) // Mocked ID
+        val currentUserId = TokenManager(requireContext()).getUserId()
+        adapter = ChatAdapter(currentUserId = currentUserId)
         
         binding.chatRecyclerView.layoutManager = LinearLayoutManager(context)
         binding.chatRecyclerView.adapter = adapter

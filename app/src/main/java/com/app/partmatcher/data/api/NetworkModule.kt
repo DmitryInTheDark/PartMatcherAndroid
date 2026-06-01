@@ -9,7 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkModule {
-    private const val BASE_URL = "http://localhost:8080" // Change to actual host if needed
+    private const val BASE_URL = "http://10.180.202.145:8080" // Change to actual host if needed
 
     private var retrofit: Retrofit? = null
 

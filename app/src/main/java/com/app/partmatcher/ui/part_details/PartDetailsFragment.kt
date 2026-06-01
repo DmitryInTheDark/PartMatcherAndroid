@@ -5,12 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import com.app.partmatcher.R
 import com.app.partmatcher.data.api.NetworkModule
 import com.app.partmatcher.data.model.PartDto
 import com.app.partmatcher.databinding.FragmentPartDetailsBinding
+import com.app.partmatcher.util.TokenManager
 import com.bumptech.glide.Glide
-import androidx.navigation.fragment.findNavController
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
@@ -21,7 +22,10 @@ class PartDetailsFragment : MvpAppCompatFragment(), PartDetailsView {
 
     private val presenter by moxyPresenter {
         val partId = arguments?.getLong("partId") ?: 0L
-        PartDetailsPresenter(NetworkModule.getApiService(requireContext()), partId)
+        val tokenManager = TokenManager(requireContext())
+        val roles = tokenManager.getRoles()
+        val isAdmin = roles.contains("ADMIN") || roles.contains("ROLE_ADMIN")
+        PartDetailsPresenter(NetworkModule.getApiService(requireContext()), partId, isAdmin)
     }
 
     override fun onCreateView(
@@ -35,67 +39,95 @@ class PartDetailsFragment : MvpAppCompatFragment(), PartDetailsView {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-        binding.toolbar.inflateMenu(R.menu.home_menu) // Reusing the same menu as it has the favorites action
-        binding.toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.action_favorites -> {
-                    presenter.onFavoritesListClicked()
-                    true
-                }
-                else -> false
-            }
-        }
 
         binding.toolbar.setNavigationOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            findNavController().popBackStack()
         }
+
         binding.btnAddToFavorites.setOnClickListener {
-            presenter.onAddToFavoritesClicked()
+            presenter.onFavoriteToggleClicked()
         }
+
         binding.btnAnalogs.setOnClickListener {
             presenter.onAnalogsClicked()
+        }
+
+        binding.btnDeletePart.setOnClickListener {
+            presenter.onDeleteClicked()
+        }
+        
+        binding.btnEditPart.setOnClickListener {
+            Toast.makeText(context, "Edit part clicked", Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun showPartDetails(part: PartDto) {
         binding.tvPartTitle.text = part.name
-        binding.tvPriceDetails.text = "${part.price} ₽"
+        binding.tvPriceDetails.text = part.price?.let { "$it ₽" } ?: "Цена по запросу"
         binding.chipBrandDetails.text = part.manufacturer
         binding.tvArticleDetails.text = "Art: ${part.article}"
-        binding.tvDescription.text = part.description
+        binding.tvDescription.text = part.description ?: "Нет описания"
 
         Glide.with(this)
             .load(part.imageUrl)
-            .placeholder(com.app.partmatcher.R.drawable.ic_part_placeholder)
+            .placeholder(R.drawable.ic_part_placeholder)
+            .error(R.drawable.ic_part_placeholder)
             .into(binding.ivPartLarge)
     }
 
     override fun showFavoriteStatus(isFavorite: Boolean) {
         if (isFavorite) {
             binding.btnAddToFavorites.text = "В избранном"
-            binding.btnAddToFavorites.setIconResource(com.app.partmatcher.R.drawable.ic_check)
+            binding.btnAddToFavorites.setIconResource(R.drawable.ic_favorite_filled)
+        } else {
+            binding.btnAddToFavorites.text = "В избранное"
+            binding.btnAddToFavorites.setIconResource(R.drawable.ic_favorite_border)
         }
     }
 
     override fun navigateToAnalogs(partId: Long) {
-        // Navigate to analogs fragment
-        Toast.makeText(context, "Navigating to Analogs for $partId", Toast.LENGTH_SHORT).show()
+        val bundle = Bundle().apply { putLong("partId", partId) }
+        findNavController().navigate(resId = R.id.analogsFragment, args = bundle)
     }
 
     override fun navigateToFavorites() {
-        findNavController().navigate(R.id.action_partDetailsFragment_to_favoritesFragment)
+        findNavController().navigate(resId = R.id.favoritesFragment)
     }
 
-    override fun showLoading() {}
+    override fun showAdminActions(visible: Boolean) {
+        binding.adminActionBar.visibility = if (visible) View.VISIBLE else View.GONE
+    }
 
-    override fun showSuccess() {}
+    override fun onPartDeleted() {
+        Toast.makeText(context, "Деталь удалена", Toast.LENGTH_SHORT).show()
+        findNavController().popBackStack()
+    }
+
+    override fun showLoading() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.contentContainer.visibility = View.GONE
+    }
+
+    override fun showSuccess() {
+        binding.progressBar.visibility = View.GONE
+        binding.contentContainer.visibility = View.VISIBLE
+    }
 
     override fun showError(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        binding.progressBar.visibility = View.GONE
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
-    override fun showEmpty() {}
+    override fun showEmpty() {
+        binding.progressBar.visibility = View.GONE
+        // Можно добавить отдельный View для пустого состояния, если нужно
+        Toast.makeText(requireContext(), "Деталь не найдена", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onUnauthorized() {
+        TokenManager(requireContext()).clearToken()
+        findNavController().navigate(resId = R.id.loginFragment)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

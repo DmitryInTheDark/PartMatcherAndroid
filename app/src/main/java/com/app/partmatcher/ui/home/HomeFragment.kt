@@ -9,6 +9,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.app.partmatcher.R
 import com.app.partmatcher.databinding.FragmentHomeBinding
+import com.app.partmatcher.util.TokenManager
 import com.google.android.material.chip.Chip
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
@@ -96,6 +97,11 @@ class HomeFragment : MvpAppCompatFragment(), HomeView {
 
     override fun showEmpty() {
         // Show empty state
+    }
+
+    override fun onUnauthorized() {
+        TokenManager(requireContext()).clearToken()
+        findNavController().navigate(resId = R.id.loginFragment)
     }
 
     override fun onDestroyView() {

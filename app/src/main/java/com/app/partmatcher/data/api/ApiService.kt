@@ -55,6 +55,9 @@ interface ApiService {
     fun unlinkPartFromVehicle(@Path("vehicleId") vehicleId: Long, @Path("partId") partId: Long): Call<ApiResponseDto>
 
     // PART
+    @GET("/api/parts/{id}")
+    fun getPart(@Path("id") id: Long): Call<PartDto>
+
     @GET("/api/parts/search")
     fun searchParts(@Query("query") query: String): Call<List<PartDto>>
 

@@ -2,6 +2,7 @@ package com.app.partmatcher.ui.vin_result
 
 import com.app.partmatcher.data.api.ApiService
 import com.app.partmatcher.data.model.VehicleSearchResultDto
+import com.app.partmatcher.util.ErrorUtils
 import moxy.MvpPresenter
 import retrofit2.Call
 import retrofit2.Callback
@@ -37,8 +38,10 @@ class VinResultPresenter(
                     } else {
                         viewState.showEmpty()
                     }
+                } else if (response.code() == 401) {
+                    viewState.onUnauthorized()
                 } else {
-                    viewState.showError("Error: ${response.code()}")
+                    viewState.showError(ErrorUtils.parseError(response))
                 }
             }
 

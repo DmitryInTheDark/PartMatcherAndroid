@@ -3,6 +3,7 @@ package com.app.partmatcher.ui.favorites
 import com.app.partmatcher.data.api.ApiService
 import com.app.partmatcher.data.model.ApiResponseDto
 import com.app.partmatcher.data.model.PartDto
+import com.app.partmatcher.util.ErrorUtils
 import moxy.MvpPresenter
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,7 +37,7 @@ class FavoritesPresenter(
                 } else if (response.code() == 401) {
                     viewState.onUnauthorized()
                 } else {
-                    viewState.showError("Ошибка загрузки: ${response.code()}")
+                    viewState.showError(ErrorUtils.parseError(response))
                 }
             }
 
@@ -60,7 +61,7 @@ class FavoritesPresenter(
                 } else if (response.code() == 401) {
                     viewState.onUnauthorized()
                 } else {
-                    viewState.showError("Не удалось удалить из избранного")
+                    viewState.showError(ErrorUtils.parseError(response))
                 }
             }
 

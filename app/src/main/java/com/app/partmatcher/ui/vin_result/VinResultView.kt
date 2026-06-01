@@ -4,6 +4,7 @@ import com.app.partmatcher.data.model.PartDto
 import com.app.partmatcher.data.model.VehicleDto
 import com.app.partmatcher.ui.BaseView
 import moxy.viewstate.strategy.alias.AddToEndSingle
+import moxy.viewstate.strategy.alias.OneExecution
 
 interface VinResultView : BaseView {
     @AddToEndSingle
@@ -12,6 +13,6 @@ interface VinResultView : BaseView {
     @AddToEndSingle
     fun showCompatibleParts(parts: List<PartDto>)
 
-    @AddToEndSingle
+    @OneExecution
     fun navigateToPartDetails(partId: Long)
 }

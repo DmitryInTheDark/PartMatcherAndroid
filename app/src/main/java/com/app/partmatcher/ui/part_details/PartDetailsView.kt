@@ -17,4 +17,10 @@ interface PartDetailsView : BaseView {
 
     @OneExecution
     fun navigateToFavorites()
+
+    @AddToEndSingle
+    fun showAdminActions(visible: Boolean)
+
+    @OneExecution
+    fun onPartDeleted()
 }

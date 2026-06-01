@@ -25,6 +25,8 @@ class AdminStatsPresenter(
                         viewState.showStatistics(it)
                         viewState.showSuccess()
                     } ?: viewState.showEmpty()
+                } else if (response.code() == 401) {
+                    viewState.onUnauthorized()
                 } else {
                     viewState.showError("Error: ${response.code()}")
                 }

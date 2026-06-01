@@ -1,26 +1,26 @@
-package com.app.partmatcher.ui.auth
+package com.app.partmatcher.ui.profile
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.app.partmatcher.R
 import com.app.partmatcher.data.api.NetworkModule
-import com.app.partmatcher.databinding.FragmentRegisterBinding
+import com.app.partmatcher.data.model.UserDto
+import com.app.partmatcher.databinding.FragmentProfileBinding
 import com.app.partmatcher.util.TokenManager
 import moxy.MvpAppCompatFragment
 import moxy.ktx.moxyPresenter
 
-class RegisterFragment : MvpAppCompatFragment(), RegisterView {
+class ProfileFragment : MvpAppCompatFragment(), ProfileView {
 
-    private var _binding: FragmentRegisterBinding? = null
+    private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
     private val presenter by moxyPresenter {
-        RegisterPresenter(
+        ProfilePresenter(
             NetworkModule.getApiService(requireContext()),
             TokenManager(requireContext())
         )
@@ -31,50 +31,49 @@ class RegisterFragment : MvpAppCompatFragment(), RegisterView {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.btnRegister.setOnClickListener {
-            val name = binding.nameEditText.text.toString()
-            val email = binding.emailEditText.text.toString()
-            val password = binding.passwordEditText.text.toString()
-            presenter.onRegisterClicked(name, email, password)
-        }
-
-        binding.btnBackToLogin?.setOnClickListener {
-            findNavController().popBackStack()
+        binding.btnLogout.setOnClickListener {
+            presenter.onLogoutClicked()
         }
     }
 
-    override fun navigateToHome() {
+    override fun showUserInfo(user: UserDto) {
+        binding.tvName.text = user.name
+        binding.tvEmail.text = user.email
+        binding.tvRole.text = "Role: ${user.roles.joinToString()}"
+    }
+
+    override fun navigateToLogin() {
         val options = navOptions {
             popUpTo(R.id.nav_graph) { inclusive = true }
         }
-        findNavController().navigate(R.id.homeFragment, null, options)
+        findNavController().navigate(R.id.loginFragment, null, options)
     }
 
     override fun showLoading() {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.btnRegister.isEnabled = false
+        // Implement loading state if needed
     }
 
     override fun showSuccess() {
-        binding.progressBar.visibility = View.GONE
-        binding.btnRegister.isEnabled = true
+        // Implement success state if needed
     }
 
     override fun showError(message: String) {
-        binding.progressBar.visibility = View.GONE
-        binding.btnRegister.isEnabled = true
-        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+        // Show error message
     }
 
     override fun showEmpty() {
-        // Not used
+        // Show empty state
+    }
+
+    override fun onUnauthorized() {
+        TokenManager(requireContext()).clearToken()
+        navigateToLogin()
     }
 
     override fun onDestroyView() {

@@ -15,7 +15,27 @@ class TokenManager(context: Context) {
         return prefs.getString("jwt_token", null)
     }
 
+    fun saveUser(id: Long, name: String, roles: Set<String>) {
+        prefs.edit()
+            .putLong("user_id", id)
+            .putString("user_name", name)
+            .putStringSet("user_roles", roles)
+            .apply()
+    }
+
+    fun getUserId(): Long {
+        return prefs.getLong("user_id", -1L)
+    }
+
+    fun getUserName(): String? {
+        return prefs.getString("user_name", null)
+    }
+
+    fun getRoles(): Set<String> {
+        return prefs.getStringSet("user_roles", emptySet()) ?: emptySet()
+    }
+
     fun clearToken() {
-        prefs.edit().remove("jwt_token").apply()
+        prefs.edit().clear().apply()
     }
 }

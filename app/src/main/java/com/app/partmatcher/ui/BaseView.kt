@@ -17,5 +17,5 @@ interface BaseView : MvpView {
     fun showEmpty()
 
     @moxy.viewstate.strategy.alias.OneExecution
-    fun onUnauthorized()
+    fun onUnauthorized() {}
 }
